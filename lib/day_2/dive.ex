@@ -39,13 +39,11 @@ defmodule AdventOfCode2021.Dive do
 
   defp get_puzzle do
     with {:ok, content} <- File.read("lib/day_2/puzzle_input.txt") do
-      array_puzzle =
+      mapped_puzzle =
         content
         |> String.split("\n", trim: true)
         |> Enum.map(fn line -> String.split(line, " ") end)
-
-      mapped_puzzle =
-        for [action, value] <- array_puzzle, do: %{action: action, value: String.to_integer(value)}
+        |> Enum.map(fn [action, value] -> %{action: action, value: String.to_integer(value)} end)
 
       {:ok, mapped_puzzle}
     end

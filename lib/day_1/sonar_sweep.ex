@@ -3,38 +3,23 @@ defmodule AdventOfCode2021.SonarSweep do
   Advent of Code 2021
   Day 1: Sonar Sweep
   """
-  @data %{keys: 0, previous: nil}
 
-  @spec find_keys(1 | 2) :: binary
+  @spec find_keys(1 | 2) :: non_neg_integer | {:error, atom}
   def find_keys(_type = 1) do
-    {_, puzzle} = get_puzzle()
-
-    result = Enum.reduce(puzzle, @data, fn value, acc ->
-      proceed_key(1, acc, value)
-    end)
-    inspect(result.keys)
+    with {:ok, puzzle} <- get_puzzle() do
+      puzzle
+      |> Enum.chunk_every(2, 1, :discard)
+      |> Enum.count(fn [left, right] -> right > left end)
+    end
   end
 
   def find_keys(_type = 2) do
-    {_, puzzle} = get_puzzle()
-    chunked_puzzle = Enum.chunk_every(puzzle, 3, 1, :discard)
-
-    result = Enum.reduce(chunked_puzzle, @data, fn value, acc ->
-      proceed_key(2, acc, value)
-    end)
-    inspect(result.keys)
-  end
-
-  defp proceed_key(_type = 1, data, value) do
-    if value > data.previous, do: %{data | keys: data.keys + 1, previous: value}, else: %{data | previous: value}
-  end
-
-  defp proceed_key(_type = 2, data = %{previous: nil}, value) do
-    %{data | previous: value}
-  end
-
-  defp proceed_key(_type = 2, data, value) do
-    if Enum.sum(value) > Enum.sum(data.previous), do: %{data | keys: data.keys + 1, previous: value}, else: %{data | previous: value}
+    with {:ok, puzzle} <- get_puzzle() do
+      puzzle
+      |> Enum.chunk_every(3, 1, :discard)
+      |> Enum.chunk_every(2, 1, :discard)
+      |> Enum.count(fn [left, right] -> Enum.sum(right) > Enum.sum(left) end)
+    end
   end
 
   defp get_puzzle do
