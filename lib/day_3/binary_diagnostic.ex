@@ -40,13 +40,13 @@ defmodule AdventOfCode2021.BinaryDiagnostic do
       |> List.first()
       |> String.length()
 
-    with oxygen <- get_rating_value(width, {data, "common"}),
-         scrubber <- get_rating_value(width, {%{puzzle: elem(get_puzzle(), 1)}, "less"}) do
+    with oxygen <- get_rating_value(width, {data, :common}),
+         scrubber <- get_rating_value(width, {%{puzzle: elem(get_puzzle(), 1)}, :less}) do
       oxygen * scrubber
     end
   end
 
-  defp get_rating_value(width, {data, type}) when type in ["common", "less"] do
+  defp get_rating_value(width, {data, type}) when type in [:common, :less] do
     0..(width - 1)
     |> Enum.reduce_while(data, fn index, acc ->
       common =
@@ -66,9 +66,9 @@ defmodule AdventOfCode2021.BinaryDiagnostic do
     |> get_decimal()
   end
 
-  defp rating_bit(value, "common" = _type), do: dominant_bit_value(value)
+  defp rating_bit(value, :common = _type), do: dominant_bit_value(value)
 
-  defp rating_bit(value, "less" = _type), do: least_bit_value(value)
+  defp rating_bit(value, :less = _type), do: least_bit_value(value)
 
   defp get_index_diff(puzzle, index) do
     %{
