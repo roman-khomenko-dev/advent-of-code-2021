@@ -9,20 +9,24 @@ defmodule AdventOfCode2021.BinaryDiagnostic do
     {_, puzzle} = get_puzzle()
     data = %{gamma_rate: "", epsilon_rate: ""}
 
+    # Get width of one string row to make calculations on each of them
     width =
       puzzle
       |> List.first()
       |> String.length()
 
+    # Get map with index and count values to compare
     0..(width - 1)
     |> Enum.map(&get_index_diff(puzzle, &1))
+    # Compose gamma and epsilon strings
     |> Enum.reduce(data, fn row, acc ->
       %{
         acc
-        | gamma_rate: acc.gamma_rate <> common_bit(row),
-          epsilon_rate: acc.epsilon_rate <> less_bit(row)
+        | gamma_rate: acc.gamma_rate <> dominant_bit_value(row),
+          epsilon_rate: acc.epsilon_rate <> least_bit_value(row)
       }
     end)
+    # Put values to list and calculate multiply result
     |> Enum.into([], fn {_key, value} -> get_decimal(value) end)
     |> Enum.product()
   end
@@ -62,9 +66,9 @@ defmodule AdventOfCode2021.BinaryDiagnostic do
     |> get_decimal()
   end
 
-  defp rating_bit(value, "common" = _type), do: common_bit(value)
+  defp rating_bit(value, "common" = _type), do: dominant_bit_value(value)
 
-  defp rating_bit(value, "less" = _type), do: less_bit(value)
+  defp rating_bit(value, "less" = _type), do: least_bit_value(value)
 
   defp get_index_diff(puzzle, index) do
     %{
@@ -74,13 +78,17 @@ defmodule AdventOfCode2021.BinaryDiagnostic do
     }
   end
 
-  defp get_decimal(number) when is_binary(number), do: elem(Integer.parse(number, 2), 0)
+  defp get_decimal(number) when is_binary(number) do
+    number
+    |> Integer.parse(2)
+    |> elem(0)
+  end
 
   defp get_index_count(puzzle, index, bit), do: Enum.count(puzzle, &(String.at(&1, index) == bit))
 
-  defp common_bit(%{one: one, zero: zero} = _row), do: if(one >= zero, do: "1", else: "0")
+  defp dominant_bit_value(%{one: one, zero: zero} = _row), do: if(one >= zero, do: "1", else: "0")
 
-  defp less_bit(%{one: one, zero: zero} = _row), do: if(zero <= one, do: "0", else: "1")
+  defp least_bit_value(%{one: one, zero: zero} = _row), do: if(zero <= one, do: "0", else: "1")
 
   defp get_puzzle do
     with {:ok, content} <- File.read("lib/day_3/puzzle_input.txt") do
