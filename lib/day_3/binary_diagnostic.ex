@@ -15,26 +15,26 @@ defmodule AdventOfCode2021.BinaryDiagnostic do
     # Compose gamma and epsilon strings
     |> compose_characteristics(data)
     # Put values to list and calculate multiply result
-    |> calculate_result()
+    |> calculate_power_consumption()
   end
 
   @spec life_support_rating :: integer
   def life_support_rating do
     data = %{puzzle: elem(get_puzzle(), 1)}
 
-    with oxygen <- get_rating_value(data.puzzle, {data, :common}),
-         scrubber <- get_rating_value(data.puzzle, {%{puzzle: elem(get_puzzle(), 1)}, :less}) do
+    with oxygen <- get_rating_value(data.puzzle, {data, :dominant}),
+         scrubber <- get_rating_value(data.puzzle, {%{puzzle: elem(get_puzzle(), 1)}, :least}) do
       oxygen * scrubber
     end
   end
 
-  defp get_rating_value(puzzle, {data, type}) when type in [:common, :less] do
+  defp get_rating_value(puzzle, {data, type}) when type in [:dominant, :least] do
     puzzle
     |> puzzle_symbol_range()
     # Find dominant or least bit and apply criteria filter
     |> define_rating_bit({data, type})
     # Get value from map, parse to decimal
-    |> extract_result()
+    |> extract_characteristic_rating()
   end
 
   defp define_rating_bit(puzzle_symbol_range, {data, type}) do
@@ -53,14 +53,14 @@ defmodule AdventOfCode2021.BinaryDiagnostic do
     %{acc | puzzle: Enum.filter(acc.puzzle, fn row -> String.at(row, index) == bit end)}
   end
 
-  defp extract_result(data) do
+  defp extract_characteristic_rating(data) do
     data
     |> Map.get(:puzzle)
     |> List.first()
     |> get_decimal()
   end
 
-  defp calculate_result(data) do
+  defp calculate_power_consumption(data) do
     data
     |> Enum.into([], fn {_key, value} -> get_decimal(value) end)
     |> Enum.product()
@@ -76,9 +76,9 @@ defmodule AdventOfCode2021.BinaryDiagnostic do
     end)
   end
 
-  defp rating_bit(value, :common = _type), do: dominant_bit_value(value)
+  defp rating_bit(value, :dominant = _type), do: dominant_bit_value(value)
 
-  defp rating_bit(value, :less = _type), do: least_bit_value(value)
+  defp rating_bit(value, :least = _type), do: least_bit_value(value)
 
   defp bit_count(puzzle, index) do
     %{
