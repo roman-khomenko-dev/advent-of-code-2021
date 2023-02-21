@@ -31,21 +31,30 @@ defmodule AdventOfCode2021.BinaryDiagnostic do
   defp get_rating_value(puzzle, {data, type}) when type in [:common, :less] do
     puzzle
     |> puzzle_symbol_range()
-    # Find dominant or least bit at row index
-    |> Enum.reduce_while(data, fn index, acc ->
-      bit =
+    # Find dominant or least bit and apply criteria filter
+    |> define_rating_bit({data, type})
+    # Get value from map, parse to decimal
+    |> extract_result()
+  end
+
+  defp define_rating_bit(puzzle_symbol_range, {data, type}) do
+    Enum.reduce_while(puzzle_symbol_range, data, fn index, acc ->
+      acc =
         acc.puzzle
         |> bit_count(index)
         |> rating_bit(type)
-    # Filter data to keep bitstring only with a properly bit at index
-      acc = %{
-        acc
-        | puzzle: Enum.filter(acc.puzzle, fn row -> String.at(row, index) == bit end)
-      }
+        |> apply_criteria_filter({acc, index})
 
       if length(acc.puzzle) > 1, do: {:cont, acc}, else: {:halt, acc}
     end)
-    # Get value from map, parse to decimal
+  end
+
+  defp apply_criteria_filter(bit, {acc, index}) do
+    %{acc | puzzle: Enum.filter(acc.puzzle, fn row -> String.at(row, index) == bit end)}
+  end
+
+  defp extract_result(data) do
+    data
     |> Map.get(:puzzle)
     |> List.first()
     |> get_decimal()
