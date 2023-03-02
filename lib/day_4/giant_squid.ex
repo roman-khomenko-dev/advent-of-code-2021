@@ -6,7 +6,8 @@ defmodule AdventOfCode2021.GiantSquid do
 
   alias Board
 
-  def game_final_score do
+  @spec victory_against_the_giant_squid :: number
+  def victory_against_the_giant_squid do
     {numbers, boards_data} = get_puzzle()
     boards = Enum.map(boards_data, &Board.new(&1))
 
@@ -15,12 +16,36 @@ defmodule AdventOfCode2021.GiantSquid do
     |> score_of_the_winning_board()
   end
 
+  @spec let_the_giant_squid_win :: number
+  def let_the_giant_squid_win do
+    {numbers, boards_data} = get_puzzle()
+    boards = Enum.map(boards_data, &Board.new(&1))
+
+    {numbers, boards}
+    |> play_to_the_last_winning_board()
+    |> score_of_the_winning_board()
+  end
+
   defp score_of_the_winning_board({number, board}) do
-      board.rows
-      |> Enum.map(fn row -> Tuple.to_list(row.numbers) -- Tuple.to_list(row.mark) end)
-      |> List.flatten()
-      |> Enum.sum()
-      |> Kernel.*(number)
+    board.rows
+    |> Enum.map(fn row -> Tuple.to_list(row.numbers) -- Tuple.to_list(row.mark) end)
+    |> List.flatten()
+    |> Enum.sum()
+    |> Kernel.*(number)
+  end
+
+  defp play_to_the_last_winning_board({numbers, boards}) do
+    Enum.reduce_while(numbers, boards, fn number, acc ->
+      acc =
+        Enum.map(acc, fn board ->
+          rows = append_number_if_lines_contain(number, board.rows)
+          cols = append_number_if_lines_contain(number, board.cols)
+
+          %{board | rows: rows, cols: cols}
+        end)
+      acc = if any_board_win_not_last?(acc), do: remove_fully_marked_boards(acc), else: acc
+      if any_board_win_its_last?(acc), do: {:halt, mark_board_as_winner(number, acc)}, else: {:cont, acc}
+    end)
   end
 
   defp play_to_the_winning_board({numbers, boards}) do
@@ -34,6 +59,16 @@ defmodule AdventOfCode2021.GiantSquid do
         end)
       if any_board_win?(acc), do: {:halt, mark_board_as_winner(number, acc)}, else: {:cont, acc}
     end)
+  end
+
+  defp any_board_win_not_last?(boards), do: any_board_win?(boards) && Enum.count(boards) > 1
+
+  defp any_board_win_its_last?(boards), do: any_board_win?(boards) && Enum.count(boards) == 1
+
+  defp remove_fully_marked_boards([_last_board] = boards), do: boards
+
+  defp remove_fully_marked_boards(boards) do
+    boards -- Enum.filter(boards, &rows_or_cols_fully_marked(&1))
   end
 
   defp append_number_if_lines_contain(number, lines) do
