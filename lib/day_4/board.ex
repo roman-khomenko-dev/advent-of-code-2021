@@ -31,9 +31,7 @@ defmodule Board do
   @spec append_mark_if_lines_contain(any, %{:cols => any, :rows => any, optional(any) => any}) ::
           %{:cols => list, :rows => list, optional(any) => any}
   def append_mark_if_lines_contain(number, board) do
-    rows = map_number_if_lines_contain(number, board.rows)
-    cols = map_number_if_lines_contain(number, board.cols)
-    %{board | rows: rows, cols: cols}
+    %{board | rows: map_number_if_lines_contain(number, board.rows), cols: map_number_if_lines_contain(number, board.cols)}
   end
 
   @spec map_number_if_lines_contain(any, any) :: list
