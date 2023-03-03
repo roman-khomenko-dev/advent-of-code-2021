@@ -13,7 +13,7 @@ defmodule AdventOfCode2021.GiantSquid do
 
     {numbers, boards}
     |> play_to_the_winning_board()
-    |> Board.score_of_the_winning_board()
+    |> score_of_the_winning_board()
   end
 
   @spec let_the_giant_squid_win :: number
@@ -23,22 +23,57 @@ defmodule AdventOfCode2021.GiantSquid do
 
     {numbers, boards}
     |> play_to_the_last_winning_board()
-    |> Board.score_of_the_winning_board()
+    |> score_of_the_winning_board()
   end
 
   defp play_to_the_last_winning_board({numbers, boards}) do
     Enum.reduce_while(numbers, boards, fn number, acc ->
       acc = Enum.map(acc, fn board -> Board.append_mark_if_lines_contain(number, board) end)
-      acc = if Board.any_board_win_not_last?(acc), do: Board.remove_fully_marked_boards(acc), else: acc
-      if Board.any_board_win_its_last?(acc), do: {:halt, Board.mark_board_as_winner(number, acc)}, else: {:cont, acc}
+      acc = if any_board_win_not_last?(acc), do: remove_fully_marked_boards(acc), else: acc
+      if any_board_win_its_last?(acc), do: {:halt, mark_board_as_winner(number, acc)}, else: {:cont, acc}
     end)
   end
 
   defp play_to_the_winning_board({numbers, boards}) do
     Enum.reduce_while(numbers, boards, fn number, acc ->
       acc = Enum.map(acc, fn board -> Board.append_mark_if_lines_contain(number, board) end)
-      if Board.any_board_win?(acc), do: {:halt, Board.mark_board_as_winner(number, acc)}, else: {:cont, acc}
+      if any_board_win?(acc), do: {:halt, mark_board_as_winner(number, acc)}, else: {:cont, acc}
     end)
+  end
+
+  @spec score_of_the_winning_board({number, atom | %{:rows => any, optional(any) => any}}) ::
+  number
+  def score_of_the_winning_board({number, board}) do
+    board
+    |> Board.score()
+    |> List.flatten()
+    |> Enum.sum()
+    |> Kernel.*(number)
+  end
+
+  @spec any_board_win_not_last?(any) :: boolean
+  def any_board_win_not_last?(boards), do: any_board_win?(boards) && Enum.count(boards) > 1
+
+  @spec any_board_win_its_last?(any) :: boolean
+  def any_board_win_its_last?(boards), do: any_board_win?(boards) && Enum.count(boards) == 1
+
+  @spec any_board_win?(any) :: boolean
+  def any_board_win?(boards) do
+    Enum.any?(boards, &Board.any_line_fully_marked?(&1.rows)) or Enum.any?(boards, &Board.any_line_fully_marked?(&1.cols))
+  end
+
+  @spec remove_fully_marked_boards(list) :: list
+  def remove_fully_marked_boards([_last_board] = boards), do: boards
+
+  def remove_fully_marked_boards(boards) do
+    boards -- Enum.filter(boards, &Board.rows_or_cols_fully_marked(&1))
+  end
+
+  @spec mark_board_as_winner(any, any) :: {any, %{:winner => true, optional(any) => any}}
+  def mark_board_as_winner(number, boards) do
+    {number, boards
+    |> Enum.find(&Board.rows_or_cols_fully_marked(&1))
+    |> Map.put(:winner, true)}
   end
 
   @spec get_puzzle :: {list, list}

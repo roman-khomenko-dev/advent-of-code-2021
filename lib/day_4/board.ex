@@ -18,15 +18,8 @@ defmodule Board do
     }
   end
 
-  @spec score_of_the_winning_board({number, atom | %{:rows => any, optional(any) => any}}) ::
-          number
-  def score_of_the_winning_board({number, board}) do
-    board.rows
-    |> Enum.map(fn row -> Tuple.to_list(row.numbers) -- Tuple.to_list(row.mark) end)
-    |> List.flatten()
-    |> Enum.sum()
-    |> Kernel.*(number)
-  end
+  @spec score(atom | %{:rows => any, optional(any) => any}) :: list
+  def score(board), do: Enum.map(board.rows, fn row -> Tuple.to_list(row.numbers) -- Tuple.to_list(row.mark) end)
 
   @spec append_mark_if_lines_contain(any, %{:cols => any, :rows => any, optional(any) => any}) ::
           %{:cols => list, :rows => list, optional(any) => any}
@@ -43,36 +36,13 @@ defmodule Board do
     end)
   end
 
-  @spec any_board_win_not_last?(any) :: boolean
-  def any_board_win_not_last?(boards), do: any_board_win?(boards) && Enum.count(boards) > 1
-
-  @spec any_board_win_its_last?(any) :: boolean
-  def any_board_win_its_last?(boards), do: any_board_win?(boards) && Enum.count(boards) == 1
-
-  @spec remove_fully_marked_boards(list) :: list
-  def remove_fully_marked_boards([_last_board] = boards), do: boards
-
-  def remove_fully_marked_boards(boards) do
-    boards -- Enum.filter(boards, &rows_or_cols_fully_marked(&1))
-  end
-
-  @spec mark_board_as_winner(any, any) :: {any, %{:winner => true, optional(any) => any}}
-  def mark_board_as_winner(number, boards) do
-    {number, boards
-    |> Enum.find(&rows_or_cols_fully_marked(&1))
-    |> Map.put(:winner, true)}
-  end
-
-  @spec any_board_win?(any) :: boolean
-  def any_board_win?(boards) do
-    Enum.any?(boards, &any_line_fully_marked?(&1.rows)) or Enum.any?(boards, &any_line_fully_marked?(&1.cols))
-  end
-
-  defp any_line_fully_marked?(lines), do: Enum.any?(lines, fn line -> tuple_size(line.mark) == 5 end)
-
-  defp rows_or_cols_fully_marked(board) do
+  @spec rows_or_cols_fully_marked(atom | %{:rows => any, optional(any) => any}) :: boolean
+  def rows_or_cols_fully_marked(board) do
     any_line_fully_marked?(board.rows) or any_line_fully_marked?(board.cols)
   end
+
+  @spec any_line_fully_marked?(any) :: boolean
+  def any_line_fully_marked?(lines), do: Enum.any?(lines, fn line -> tuple_size(line.mark) == 5 end)
 
   defp is_number_in_line?(number, line_numbers), do: number in Tuple.to_list(line_numbers)
 end
