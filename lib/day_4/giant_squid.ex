@@ -28,8 +28,10 @@ defmodule AdventOfCode2021.GiantSquid do
 
   defp play_to_the_last_winning_board({numbers, boards}) do
     Enum.reduce_while(numbers, boards, fn number, acc ->
-      acc = Enum.map(acc, fn board -> Board.append_mark_if_lines_contain(number, board) end)
-      acc = if any_board_win_not_last?(acc), do: remove_fully_marked_boards(acc), else: acc
+      acc =
+        {number, acc}
+        |> mark_boards_with_number_if_contains()
+        |> process_board_if_win
       if any_board_win_its_last?(acc), do: {:halt, mark_board_as_winner(number, acc)}, else: {:cont, acc}
     end)
   end
@@ -39,6 +41,14 @@ defmodule AdventOfCode2021.GiantSquid do
       acc = Enum.map(acc, fn board -> Board.append_mark_if_lines_contain(number, board) end)
       if any_board_win?(acc), do: {:halt, mark_board_as_winner(number, acc)}, else: {:cont, acc}
     end)
+  end
+
+  defp process_board_if_win(boards) do
+    if any_board_win_not_last?(boards), do: remove_fully_marked_boards(boards), else: boards
+  end
+
+  defp mark_boards_with_number_if_contains({number, boards}) do
+    Enum.map(boards, fn board -> Board.append_mark_if_lines_contain(number, board) end)
   end
 
   @spec score_of_the_winning_board({number, atom | %{:rows => any, optional(any) => any}}) ::
