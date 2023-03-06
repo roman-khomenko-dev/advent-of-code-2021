@@ -30,25 +30,25 @@ defmodule AdventOfCode2021.GiantSquid do
     Enum.reduce_while(numbers, boards, fn number, acc ->
       acc =
         {number, acc}
-        |> mark_boards_with_number()
+        |> mark_boards()
         |> process_win_board()
-      if any_board_win_its_last?(acc), do: {:halt, mark_board_as_winner(number, acc)}, else: {:cont, acc}
+      if last_board_win?(acc), do: {:halt, mark_board_as_winner(number, acc)}, else: {:cont, acc}
     end)
   end
 
   defp first_board_victory({numbers, boards}) do
     Enum.reduce_while(numbers, boards, fn number, acc ->
-      acc = Enum.map(acc, fn board -> Board.append_mark_in_lines(number, board) end)
+      acc = Enum.map(acc, fn board -> Board.append_mark(number, board) end)
       if any_board_win?(acc), do: {:halt, mark_board_as_winner(number, acc)}, else: {:cont, acc}
     end)
   end
 
   defp process_win_board(boards) do
-    if any_board_win_not_last?(boards), do: remove_marked_boards(boards), else: boards
+    if first_board_win?(boards), do: remove_marked_boards(boards), else: boards
   end
 
-  defp mark_boards_with_number({number, boards}) do
-    Enum.map(boards, fn board -> Board.append_mark_in_lines(number, board) end)
+  defp mark_boards({number, boards}) do
+    Enum.map(boards, fn board -> Board.append_mark(number, board) end)
   end
 
   @spec winning_board_score({number, atom | %{:rows => any, optional(any) => any}}) ::
@@ -61,11 +61,11 @@ defmodule AdventOfCode2021.GiantSquid do
     |> Kernel.*(number)
   end
 
-  @spec any_board_win_not_last?(any) :: boolean
-  def any_board_win_not_last?(boards), do: any_board_win?(boards) && Enum.count(boards) > 1
+  @spec first_board_win?(any) :: boolean
+  def first_board_win?(boards), do: any_board_win?(boards) && Enum.count(boards) > 1
 
-  @spec any_board_win_its_last?(any) :: boolean
-  def any_board_win_its_last?(boards), do: any_board_win?(boards) && Enum.count(boards) == 1
+  @spec last_board_win?(any) :: boolean
+  def last_board_win?(boards), do: any_board_win?(boards) && Enum.count(boards) == 1
 
   @spec any_board_win?(any) :: boolean
   def any_board_win?(boards) do

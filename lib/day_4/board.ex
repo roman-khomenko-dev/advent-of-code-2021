@@ -21,14 +21,14 @@ defmodule Board do
   @spec score(atom | %{:rows => any, optional(any) => any}) :: list
   def score(board), do: Enum.map(board.rows, fn row -> Tuple.to_list(row.numbers) -- Tuple.to_list(row.mark) end)
 
-  @spec append_mark_in_lines(any, %{:cols => any, :rows => any, optional(any) => any}) ::
+  @spec append_mark(any, %{:cols => any, :rows => any, optional(any) => any}) ::
           %{:cols => list, :rows => list, optional(any) => any}
-  def append_mark_in_lines(number, board) do
-    %{board | rows: map_number_in_lines(number, board.rows), cols: map_number_in_lines(number, board.cols)}
+  def append_mark(number, board) do
+    %{board | rows: mark_number(number, board.rows), cols: mark_number(number, board.cols)}
   end
 
-  @spec map_number_in_lines(any, any) :: list
-  def map_number_in_lines(number, lines) do
+  @spec mark_number(any, any) :: list
+  def mark_number(number, lines) do
     Enum.map(lines, fn line ->
       if is_number_in_line?(number, line.numbers),
         do: %{line | mark: Tuple.append(line.mark, number)},
@@ -38,11 +38,11 @@ defmodule Board do
 
   @spec line_fully_marked(atom | %{:rows => any, optional(any) => any}) :: boolean
   def line_fully_marked(board) do
-    any_line_fully_marked?(board.rows) or any_line_fully_marked?(board.cols)
+    any_line_marked?(board.rows) or any_line_marked?(board.cols)
   end
 
-  @spec any_line_fully_marked?(any) :: boolean
-  def any_line_fully_marked?(lines), do: Enum.any?(lines, fn line -> tuple_size(line.mark) == 5 end)
+  @spec any_line_marked?(any) :: boolean
+  def any_line_marked?(lines), do: Enum.any?(lines, fn line -> tuple_size(line.mark) == 5 end)
 
   defp is_number_in_line?(number, line_numbers), do: number in Tuple.to_list(line_numbers)
 end
