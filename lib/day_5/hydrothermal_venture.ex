@@ -25,11 +25,11 @@ defmodule AdventOfCode2021.HydrothermalVenture do
         find_line_point({y1, y2, x}, grid, :vertical)
 
       [x1, y1, x2, y2], grid ->
-        find_diagonal_points({x1, x2, y1, y2}, grid, type)
+        find_diagonal_point({x1, x2, y1, y2}, grid, type)
     end)
   end
 
-  defp find_diagonal_points({x1, x2, y1, y2}, grid, :diagonal) do
+  defp find_diagonal_point({x1, x2, y1, y2}, grid, :diagonal) do
     [x1..x2, y1..y2]
     |> Enum.zip()
     |> Enum.reduce(grid, fn point, grid ->
@@ -37,7 +37,7 @@ defmodule AdventOfCode2021.HydrothermalVenture do
     end)
   end
 
-  defp find_diagonal_points(_data, grid, _type), do: grid
+  defp find_diagonal_point(_data, grid, _type), do: grid
 
   defp find_line_point({n1, n2, state_value}, line, axis) do
     Enum.reduce(n1..n2, line, fn n, line ->
