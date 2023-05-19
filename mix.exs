@@ -21,7 +21,8 @@ defmodule AdventOfCode2021.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:credo, "~> 1.6", only: [:dev, :test], runtime: false}
+      {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
+      {:nx, "~> 0.5.3"}
     ]
   end
 end
